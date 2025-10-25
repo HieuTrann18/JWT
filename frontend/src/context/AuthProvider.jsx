@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [refreshToken, setRefreshToken] = useState(savedRefreshToken);
 
   useEffect(() => {
-    if (!accessToken || !user) return; // thêm !user
+    if (!accessToken || !user) return;
     const checkToken = async () => {
       try {
         const payload = JSON.parse(atob(accessToken.split(".")[1]));

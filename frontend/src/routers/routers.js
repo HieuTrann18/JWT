@@ -1,20 +1,22 @@
-import { lazy } from "react";
+// routers/routers.js
+import Home from "../pages/Home/Home";
+import Login from "../pages/Login/Login";
+import Dashboard from "../pages/Admin/Dashboard";
+
 const routers = [
   {
     path: "/",
-    component: lazy(() => import("../pages/Home/Home")),
+    component: Home,
     private: false,
   },
-
   {
     path: "/login",
-    component: lazy(() => import("../pages/Login/Login")),
+    component: Login,
     private: false,
   },
-
   {
     path: "/admin/dashboard",
-    component: lazy(() => import("../pages/Admin/Dashboard")),
+    component: Dashboard,
     private: true,
   },
 ];

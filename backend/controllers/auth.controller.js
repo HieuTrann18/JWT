@@ -59,7 +59,6 @@ const refreshToken = async (req, res) => {
 };
 
 module.exports = {
-  register,
   login,
   logout,
   refreshToken,
