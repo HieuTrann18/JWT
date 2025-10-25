@@ -1,6 +1,30 @@
 const authService = require("../services/auth.service");
-const Token = require("../models/token.schema");
 const SECRET = process.env.SECRETKEY;
+
+const register = async (req, res) => {
+  try {
+    // req.body sẽ chứa { email, password, fullName, studentId, ... }
+    const result = await authService.registerStudent(req.body);
+
+    return res.status(201).json({
+      message: "Đăng ký sinh viên thành công",
+      user: result.user,
+      student: result.student,
+    });
+  } catch (err) {
+    // Bắt các lỗi cụ thể từ service
+    if (
+      err.message === "Email already registered" ||
+      err.message === "Student ID already registered"
+    ) {
+      // 409 Conflict - Lỗi tài nguyên đã tồn tại
+      return res.status(409).json({ error: err.message });
+    }
+
+    // Lỗi chung
+    return res.status(500).json({ error: err.message || "Đăng ký thất bại" });
+  }
+};
 
 const login = async (req, res) => {
   try {
@@ -21,36 +45,37 @@ const login = async (req, res) => {
   }
 };
 
+// ✅ SỬA: Hàm logout phải nhận refreshToken từ body
 const logout = async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ error: "Chưa có token" });
+    // Lấy refreshToken từ body thay vì header
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      return res.status(401).json({ error: "Chưa cung cấp refresh token" });
     }
 
-    const token = authHeader.split(" ")[1];
-    await authService.logout(token);
+    await authService.logout(refreshToken);
     return res.status(200).json({ message: "Đăng xuất thành công" });
   } catch (err) {
     return res.status(500).json({ error: err.message || "Đăng xuất thất bại" });
   }
 };
 
+// ✅ SỬA: Sửa cách trả về JSON
 const refreshToken = async (req, res) => {
   try {
     const { refreshToken } = req.body;
     if (!refreshToken)
       return res.status(401).json({ error: "Không có refresh token" });
 
-    const newAccessToken = await authService.refreshAccessToken(
-      refreshToken,
-      SECRET
-    );
+    // Hàm service trả về một object, ví dụ: { accessToken: "..." }
+    const result = await authService.refreshAccessToken(refreshToken, SECRET);
 
-    if (!newAccessToken)
+    if (!result)
       return res.status(401).json({ error: "Refresh token không hợp lệ" });
 
-    return res.status(200).json({ newAccessToken });
+    // Trả về thẳng object đó
+    return res.status(200).json(result);
   } catch (err) {
     return res
       .status(500)
@@ -62,4 +87,5 @@ module.exports = {
   login,
   logout,
   refreshToken,
+  register,
 };

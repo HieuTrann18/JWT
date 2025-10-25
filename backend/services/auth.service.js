@@ -58,13 +58,17 @@ const verifyToken = (token, secret) => {
   return payload;
 };
 
+// ✅ SỬA 1: Tăng thời gian hết hạn accessToken
 const login = async (email, password, secret) => {
   const user = await User.findOne({ email });
   if (!user) return null;
   const isMatch = await comparePassword(password, user.hashedPassword);
   if (!isMatch) return null;
-  const accessToken = signToken({ id: user._id, role: user.role }, secret, 10);
+
+  // Đặt thời gian hợp lý hơn (ví dụ: 15 phút = 900 giây)
+  const accessToken = signToken({ id: user._id, role: user.role }, secret, 900);
   const refreshToken = signToken({ id: user._id }, secret, 7 * 24 * 60 * 60);
+
   await Token.create({
     userId: user._id,
     refreshToken,
@@ -73,10 +77,46 @@ const login = async (email, password, secret) => {
   return { user, accessToken, refreshToken };
 };
 
+const registerStudent = async (data) => {
+  const { email, password, fullName, studentId, major, year } = data;
+
+  const existingUser = await User.findOne({ email });
+  if (existingUser) throw new Error("Email already registered");
+
+  const existingStudent = await Student.findOne({ studentId });
+  if (existingStudent) throw new Error("Student ID already registered");
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const user = await User.create({
+    email,
+    hashedPassword,
+    role: "student",
+  });
+
+  const student = await Student.create({
+    fullName,
+    email,
+    studentId,
+    major,
+    year,
+  });
+
+  const safeUser = {
+    _id: user._id,
+    email: user.email,
+    role: user.role,
+    createdAt: user.createdAt,
+  };
+
+  return { user: safeUser, student };
+};
+
 const comparePassword = async (plainPassword, hashedPassword) => {
   return await bcrypt.compare(plainPassword, hashedPassword);
 };
 
+// ✅ SỬA 2: Sửa lỗi mất 'role' khi refresh
 const refreshAccessToken = async (refreshToken, secret) => {
   const stored = await Token.findOne({ refreshToken });
   if (!stored) return null;
@@ -88,7 +128,19 @@ const refreshAccessToken = async (refreshToken, secret) => {
     return null;
   }
 
-  const newAccessToken = signToken({ id: payload.id }, secret, 60);
+  // Phải truy vấn lại CSDL để lấy thông tin 'role' mới nhất
+  const user = await User.findById(payload.id);
+  if (!user) {
+    await Token.deleteOne({ refreshToken });
+    return null;
+  }
+
+  // Tạo token mới với đầy đủ 'id' và 'role'
+  const newAccessToken = signToken(
+    { id: user._id, role: user.role },
+    secret,
+    60
+  );
   return { accessToken: newAccessToken };
 };
 
@@ -96,13 +148,17 @@ const logout = async (refreshToken) => {
   await Token.deleteOne({ refreshToken });
 };
 
+// ✅ SỬA 3: Sửa lỗi sai tên trường
 const isTokenRevoked = async (token) => {
-  const exists = await Token.findOne({ token });
+  // Tên trường trong CSDL là 'refreshToken'
+  const exists = await Token.findOne({ refreshToken: token });
   return !exists;
 };
+
 module.exports = {
   login,
   logout,
+  registerStudent,
   verifyToken,
   signToken,
   isTokenRevoked,
