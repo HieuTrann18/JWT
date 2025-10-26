@@ -1,0 +1,18 @@
+/* style.module.scss */
+
+/* Sidebar */
+
+/* Main content */
+.mainContent {
+  margin-left: 220px; // nhường chỗ sidebar
+  width: calc(100% - 220px);
+  min-height: 100vh;
+  background-color: #f4f6f9;
+}
+
+/* Navbar */
+
+/* Main area (nội dung chính) */
+main {
+  padding: 1.5rem;
+}

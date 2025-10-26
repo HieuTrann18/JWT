@@ -3,25 +3,18 @@ const SECRET = process.env.SECRETKEY;
 
 const register = async (req, res) => {
   try {
-    // req.body sẽ chứa { email, password, fullName, studentId, ... }
     const result = await authService.registerStudent(req.body);
-
+    if (!result) {
+      return res.status(409).json({
+        error: "Email đã được đăng ký",
+      });
+    }
     return res.status(201).json({
       message: "Đăng ký sinh viên thành công",
       user: result.user,
       student: result.student,
     });
   } catch (err) {
-    // Bắt các lỗi cụ thể từ service
-    if (
-      err.message === "Email already registered" ||
-      err.message === "Student ID already registered"
-    ) {
-      // 409 Conflict - Lỗi tài nguyên đã tồn tại
-      return res.status(409).json({ error: err.message });
-    }
-
-    // Lỗi chung
     return res.status(500).json({ error: err.message || "Đăng ký thất bại" });
   }
 };
@@ -30,8 +23,11 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const result = await authService.login(email, password, SECRET);
+
     if (!result) {
-      return res.status(401).json({ error: "Email hoặc mật khẩu không đúng" });
+      return res
+        .status(401)
+        .json({ error: "Email hoặc mật khẩu không chính xác" });
     }
 
     return res.status(200).json({

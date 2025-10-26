@@ -66,7 +66,11 @@ const login = async (email, password, secret) => {
   if (!isMatch) return null;
 
   // Đặt thời gian hợp lý hơn (ví dụ: 15 phút = 900 giây)
-  const accessToken = signToken({ id: user._id, role: user.role }, secret, 900);
+  const accessToken = signToken(
+    { id: user._id, role: user.role, email: user.email },
+    secret,
+    900
+  );
   const refreshToken = signToken({ id: user._id }, secret, 7 * 24 * 60 * 60);
 
   await Token.create({
@@ -81,10 +85,10 @@ const registerStudent = async (data) => {
   const { email, password, fullName, studentId, major, year } = data;
 
   const existingUser = await User.findOne({ email });
-  if (existingUser) throw new Error("Email already registered");
+  if (existingUser) return null;
 
   const existingStudent = await Student.findOne({ studentId });
-  if (existingStudent) throw new Error("Student ID already registered");
+  if (existingStudent) return null;
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -148,9 +152,7 @@ const logout = async (refreshToken) => {
   await Token.deleteOne({ refreshToken });
 };
 
-// ✅ SỬA 3: Sửa lỗi sai tên trường
 const isTokenRevoked = async (token) => {
-  // Tên trường trong CSDL là 'refreshToken'
   const exists = await Token.findOne({ refreshToken: token });
   return !exists;
 };

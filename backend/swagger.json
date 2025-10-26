@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Auth API",
+    "title": "Student Management API",
     "version": "1.0.0",
-    "description": "API for Login/Register with JWT"
+    "description": "API for Auth (JWT) and managing Students, based on provided routes."
   },
   "servers": [
     {
@@ -11,23 +11,24 @@
       "description": "Local server"
     }
   ],
-  "tags": [{ "name": "Auth", "description": "Authentication endpoints" }],
+  "tags": [
+    { "name": "Auth", "description": "Authentication endpoints" },
+    {
+      "name": "Students",
+      "description": "Student management (Admin) and Profile (Student)"
+    }
+  ],
   "paths": {
     "/api/auth/register": {
       "post": {
         "tags": ["Auth"],
-        "summary": "Register a new user",
+        "summary": "Register a new student and user account",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "email": { "type": "string", "example": "test@example.com" },
-                  "password": { "type": "string", "example": "123456" }
-                },
-                "required": ["email", "password"]
+                "$ref": "#/components/schemas/RegisterRequest"
               }
             }
           }
@@ -38,16 +39,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": { "type": "string" },
-                    "token": { "type": "string" }
-                  }
+                  "$ref": "#/components/schemas/AuthResponse"
                 }
               }
             }
           },
-          "400": { "description": "Email already exists" }
+          "400": { "description": "Invalid input or user already exists" }
         }
       }
     },
@@ -60,12 +57,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "email": { "type": "string", "example": "test@example.com" },
-                  "password": { "type": "string", "example": "123456" }
-                },
-                "required": ["email", "password"]
+                "$ref": "#/components/schemas/LoginRequest"
               }
             }
           }
@@ -76,11 +68,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": { "type": "string" },
-                    "token": { "type": "string" }
-                  }
+                  "$ref": "#/components/schemas/AuthResponse"
                 }
               }
             }
@@ -89,27 +77,219 @@
         }
       }
     },
-    "/api/auth/profile": {
-      "get": {
+    "/api/auth/logout": {
+      "post": {
         "tags": ["Auth"],
-        "summary": "Get current user profile",
+        "summary": "Logout a user (Revokes token)",
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "User profile",
+            "description": "Logout successful",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": { "type": "number", "example": 123 },
-                    "email": { "type": "string", "example": "test@example.com" }
-                  }
+                  "$ref": "#/components/schemas/SimpleMessage"
                 }
               }
             }
           },
           "401": { "description": "Not authorized" }
+        }
+      }
+    },
+    "/api/auth/refresh-token": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Get a new access token using a refresh token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Access token refreshed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessTokenResponse"
+                }
+              }
+            }
+          },
+          "401": { "description": "Invalid or expired refresh token" }
+        }
+      }
+    },
+    "/api/students": {
+      "get": {
+        "tags": ["Students"],
+        "summary": "Get a list of all students (Admin Only)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "A list of students",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Student"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Not authorized" },
+          "403": { "description": "Forbidden (Requires admin role)" }
+        }
+      },
+      "post": {
+        "tags": ["Students"],
+        "summary": "Create a new student (Admin Only)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Student created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Student"
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid input" },
+          "401": { "description": "Not authorized" },
+          "403": { "description": "Forbidden (Requires admin role)" }
+        }
+      }
+    },
+    "/api/students/profile/me": {
+      "get": {
+        "tags": ["Students"],
+        "summary": "Get current logged-in student's profile (Student Only)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Student profile data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Student"
+                }
+              }
+            }
+          },
+          "401": { "description": "Not authorized" },
+          "403": { "description": "Forbidden (Requires student role)" },
+          "404": { "description": "Student profile not found" }
+        }
+      }
+    },
+    "/api/students/{id}": {
+      "get": {
+        "tags": ["Students"],
+        "summary": "Get a single student by ID (Admin Only)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "The student ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Student details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Student"
+                }
+              }
+            }
+          },
+          "401": { "description": "Not authorized" },
+          "403": { "description": "Forbidden (Requires admin role)" },
+          "404": { "description": "Student not found" }
+        }
+      },
+      "put": {
+        "tags": ["Students"],
+        "summary": "Update a student by ID (Admin Only)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "The student ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudentInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Student updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Student"
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid input" },
+          "401": { "description": "Not authorized" },
+          "403": { "description": "Forbidden (Requires admin role)" },
+          "404": { "description": "Student not found" }
+        }
+      },
+      "delete": {
+        "tags": ["Students"],
+        "summary": "Delete a student by ID (Admin Only)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "The student ID"
+          }
+        ],
+        "responses": {
+          "204": { "description": "Student deleted successfully" },
+          "401": { "description": "Not authorized" },
+          "403": { "description": "Forbidden (Requires admin role)" },
+          "404": { "description": "Student not found" }
         }
       }
     }
@@ -120,6 +300,93 @@
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "role": { "type": "string", "enum": ["admin", "student"] },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Student": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "fullName": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "studentId": { "type": "string" },
+          "major": { "type": "string" },
+          "year": { "type": "number" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "StudentInput": {
+        "type": "object",
+        "description": "Data to update a student (POST uses RegisterRequest)",
+        "properties": {
+          "fullName": { "type": "string" },
+          "major": { "type": "string" },
+          "year": { "type": "number" }
+        }
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "description": "Data for new student registration or creation by admin",
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string", "format": "password" },
+          "fullName": { "type": "string" },
+          "studentId": { "type": "string" },
+          "major": { "type": "string" },
+          "year": { "type": "number" }
+        },
+        "required": ["email", "password", "fullName", "studentId"]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string", "format": "password" }
+        },
+        "required": ["email", "password"]
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "accessToken": { "type": "string" },
+          "refreshToken": { "type": "string" },
+          "user": { "$ref": "#/components/schemas/User" }
+        }
+      },
+      "RefreshTokenRequest": {
+        "type": "object",
+        "properties": {
+          "refreshToken": { "type": "string" }
+        },
+        "required": ["refreshToken"]
+      },
+      "AccessTokenResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": { "type": "string" }
+        }
+      },
+      "SimpleMessage": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" }
+        }
       }
     }
   }

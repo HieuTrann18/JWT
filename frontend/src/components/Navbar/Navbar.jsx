@@ -1,0 +1,13 @@
+import React from "react";
+import styles from "./style.module.scss";
+const Navbar = () => {
+  return (
+    <div className={styles.navbar_container}>
+      <h1>Dash board</h1>
+
+      <span>Xin chào, Admin</span>
+    </div>
+  );
+};
+
+export default Navbar;
