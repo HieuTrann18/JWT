@@ -1,13 +1,14 @@
-import React from "react";
+import React, { useContext } from "react";
 import styles from "./style.module.scss";
 import { PiStudentFill } from "react-icons/pi";
-import { AiOutlineDashboard } from "react-icons/ai";
-import { CiUser } from "react-icons/ci";
-import { HiOutlineDocumentReport } from "react-icons/hi";
-import { IoSettingsOutline } from "react-icons/io5";
+import { navItems } from "./constant";
 import { IoIosLogOut } from "react-icons/io";
 import { Link } from "react-router-dom";
+import { AuthContext } from "../../context/AuthProvider";
+
 const Sidebar = () => {
+  const { logout } = useContext(AuthContext);
+
   return (
     <div className={styles.sidebar}>
       <div className={styles.head_sidebar}>
@@ -15,11 +16,17 @@ const Sidebar = () => {
         <h2>Quản lý sinh viên</h2>
       </div>
       <div className={styles.sidebar_options}>
-        <Link to="/admin/dashboard" className={styles.option_item}>
-          <CiUser />
-          <span>Trang chủ</span>
-        </Link>
-        <Link to="/admin/students" className={styles.option_item}>
+        {navItems.map((i, idx) => {
+          const Icon = i.icon;
+          return (
+            <Link key={idx} to={i.href} className={styles.option_item}>
+              <Icon />
+              <span>{i.content}</span>
+            </Link>
+          );
+        })}
+
+        {/* <Link to="/admin/students" className={styles.option_item}>
           <HiOutlineDocumentReport />
           <span>Sinh viên</span>
         </Link>
@@ -30,11 +37,11 @@ const Sidebar = () => {
         <Link to="/admin/setting" className={styles.option_item}>
           <AiOutlineDashboard />
           <span>Cài đặt</span>
-        </Link>
-        <Link to="/logout" className={styles.option_item}>
+        </Link> */}
+        <div onClick={() => logout()} className={styles.option_item}>
           <IoIosLogOut />
           <span>Đăng xuất</span>
-        </Link>
+        </div>
       </div>
     </div>
   );

@@ -65,12 +65,12 @@ const login = async (email, password, secret) => {
   const isMatch = await comparePassword(password, user.hashedPassword);
   if (!isMatch) return null;
 
-  // Đặt thời gian hợp lý hơn (ví dụ: 15 phút = 900 giây)
   const accessToken = signToken(
     { id: user._id, role: user.role, email: user.email },
     secret,
-    900
+    60
   );
+
   const refreshToken = signToken({ id: user._id }, secret, 7 * 24 * 60 * 60);
 
   await Token.create({
