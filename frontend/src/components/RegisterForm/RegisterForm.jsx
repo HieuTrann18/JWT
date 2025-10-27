@@ -25,7 +25,7 @@ const RegisterForm = () => {
       <input type="password" placeholder="Mật khẩu" />
       <input type="password" placeholder="Nhập lại mật khẩu" />
 
-      <button>Login</button>
+      <button>Đăng nhập</button>
       <span className={styles.options} onClick={handleChangeForm}>
         Bạn đã có tài khoản?
       </span>

@@ -6,6 +6,7 @@ import { CiUser } from "react-icons/ci";
 import { HiOutlineDocumentReport } from "react-icons/hi";
 import { IoSettingsOutline } from "react-icons/io5";
 import { IoIosLogOut } from "react-icons/io";
+import { Link } from "react-router-dom";
 const Sidebar = () => {
   return (
     <div className={styles.sidebar}>
@@ -14,26 +15,26 @@ const Sidebar = () => {
         <h2>Quản lý sinh viên</h2>
       </div>
       <div className={styles.sidebar_options}>
-        <div className={styles.option_item}>
+        <Link to="/admin/dashboard" className={styles.option_item}>
           <CiUser />
           <span>Trang chủ</span>
-        </div>
-        <div className={styles.option_item}>
+        </Link>
+        <Link to="/admin/students" className={styles.option_item}>
           <HiOutlineDocumentReport />
           <span>Sinh viên</span>
-        </div>
-        <div className={styles.option_item}>
+        </Link>
+        <Link to="/admin/report" className={styles.option_item}>
           <IoSettingsOutline />
           <span>Báo cáo</span>
-        </div>
-        <div className={styles.option_item}>
+        </Link>
+        <Link to="/admin/setting" className={styles.option_item}>
           <AiOutlineDashboard />
           <span>Cài đặt</span>
-        </div>
-        <div className={styles.option_item}>
+        </Link>
+        <Link to="/logout" className={styles.option_item}>
           <IoIosLogOut />
           <span>Đăng xuất</span>
-        </div>
+        </Link>
       </div>
     </div>
   );
