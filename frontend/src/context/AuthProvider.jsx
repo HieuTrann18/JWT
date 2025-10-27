@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const res = await signIn({ email, password });
-
+    console.log(res)
     Cookies.set("user", JSON.stringify(res.data.user));
     Cookies.set("accessToken", res.data.accessToken);
     Cookies.set("refreshToken", res.data.refreshToken);  
