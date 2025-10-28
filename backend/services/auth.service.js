@@ -58,7 +58,6 @@ const verifyToken = (token, secret) => {
   return payload;
 };
 
-// ✅ SỬA 1: Tăng thời gian hết hạn accessToken
 const login = async (email, password, secret) => {
   const user = await User.findOne({ email });
   if (!user) return null;
@@ -120,7 +119,6 @@ const comparePassword = async (plainPassword, hashedPassword) => {
   return await bcrypt.compare(plainPassword, hashedPassword);
 };
 
-// ✅ SỬA 2: Sửa lỗi mất 'role' khi refresh
 const refreshAccessToken = async (refreshToken, secret) => {
   const stored = await Token.findOne({ refreshToken });
   if (!stored) return null;
@@ -132,14 +130,12 @@ const refreshAccessToken = async (refreshToken, secret) => {
     return null;
   }
 
-  // Phải truy vấn lại CSDL để lấy thông tin 'role' mới nhất
   const user = await User.findById(payload.id);
   if (!user) {
     await Token.deleteOne({ refreshToken });
     return null;
   }
 
-  // Tạo token mới với đầy đủ 'id' và 'role'
   const newAccessToken = signToken(
     { id: user._id, role: user.role },
     secret,

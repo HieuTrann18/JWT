@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import styles from "./style.module.scss";
 import { PiStudentFill } from "react-icons/pi";
 import { navItems } from "./constant";
@@ -26,19 +26,7 @@ const Sidebar = () => {
           );
         })}
 
-        {/* <Link to="/admin/students" className={styles.option_item}>
-          <HiOutlineDocumentReport />
-          <span>Sinh viên</span>
-        </Link>
-        <Link to="/admin/report" className={styles.option_item}>
-          <IoSettingsOutline />
-          <span>Báo cáo</span>
-        </Link>
-        <Link to="/admin/setting" className={styles.option_item}>
-          <AiOutlineDashboard />
-          <span>Cài đặt</span>
-        </Link> */}
-        <div onClick={() => logout()} className={styles.option_item}>
+        <div className={styles.option_item}>
           <IoIosLogOut />
           <span>Đăng xuất</span>
         </div>

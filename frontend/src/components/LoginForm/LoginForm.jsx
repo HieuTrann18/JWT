@@ -4,10 +4,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../../context/AuthProvider";
 import { FaRegEye } from "react-icons/fa";
 import { FaRegEyeSlash } from "react-icons/fa";
-import Cookies from "js-cookie";
+
 const LoginForm = () => {
   const { login } = useContext(AuthContext);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
   const isPassword = "password";
   const handleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -37,14 +38,16 @@ const LoginForm = () => {
     e.preventDefault();
     try {
       const res = await login(account.email, account.password);
-      console.log("checkres", res);
+      console.log("checkres", res.data.user);
       if (res.data.user.role === "admin") {
         navigate("/admin");
       } else {
         navigate("/student");
       }
-    } catch (err) {
-      console.log("check error", err);
+      setError("");
+    } catch (error) {
+      const errMsg = error.response?.data?.error;
+      setError(errMsg);
     }
   };
   return (
@@ -71,6 +74,7 @@ const LoginForm = () => {
         </div>
         <div className={styles.groupInput}>
           <label htmlFor="">Mật khẩu</label>
+
           <input
             type={isShowTextOrPassword}
             placeholder="••••••••"
@@ -87,6 +91,10 @@ const LoginForm = () => {
         <div className={styles.remember}>
           <input type="checkbox" />
           <span style={{ fontSize: "12px" }}>Ghi nhớ đăng nhập</span>
+
+          {error && (
+            <div style={{ fontSize: "13px", color: "red" }}>{error}</div>
+          )}
         </div>
 
         <button>Đăng nhập</button>

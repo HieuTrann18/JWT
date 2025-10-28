@@ -44,51 +44,55 @@
 
     .remember {
       display: flex;
+      align-items: center;
       gap: 8px;
       font-size: 15px;
-    }
-    .groupInput {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      position: relative;
-      .pass_icon {
-        position: absolute;
-        right: 14px;
-        cursor: pointer;
-        font-size: 17px;
-        top: 34px;
-      }
-      label {
-        font-size: 14px;
-        font-weight: 600;
-      }
-      input {
-        height: 43px;
-        outline: none;
-        padding: 0px 15px;
-        border-radius: 4px;
-        background-color: transparent;
-        border: 1px solid rgb(31 41 55);
-        color: white;
-      }
-      input::placeholder {
-        color: rgb(31 41 55);
-        font-size: 14px;
-        opacity: 1;
+      span {
+        margin-right: 85px;
       }
     }
-
-    button {
+  }
+  .groupInput {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: relative;
+    .pass_icon {
+      position: absolute;
+      right: 14px;
+      cursor: pointer;
+      font-size: 17px;
+      top: 34px;
+    }
+    label {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    input {
       height: 43px;
-      font-size: 16px;
-      border: none;
+      outline: none;
+      padding: 0px 15px;
       border-radius: 4px;
-      background-color: hsl(0deg 74.27% 52.75%);
+      background-color: transparent;
+      border: 1px solid rgb(31 41 55);
       color: white;
     }
-    .options {
-      cursor: pointer;
+    input::placeholder {
+      color: rgb(31 41 55);
+      font-size: 14px;
+      opacity: 1;
     }
+  }
+
+  button {
+    height: 43px;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    background-color: hsl(0deg 74.27% 52.75%);
+    color: white;
+  }
+  .options {
+    cursor: pointer;
   }
 }
